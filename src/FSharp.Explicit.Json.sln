@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31410.357
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FSharp.Explicit.Json", "FSharp.Explicit.Json\FSharp.Explicit.Json.fsproj", "{D6569D78-5506-4E3B-9950-B415C070F3EF}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.Explicit.Json.Tests", "..\tests\FSharp.Explicit.Json.Tests\FSharp.Explicit.Json.Tests.fsproj", "{87FDD990-8286-4C4F-AA53-CE5A5AD38822}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D6569D78-5506-4E3B-9950-B415C070F3EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6569D78-5506-4E3B-9950-B415C070F3EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6569D78-5506-4E3B-9950-B415C070F3EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6569D78-5506-4E3B-9950-B415C070F3EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87FDD990-8286-4C4F-AA53-CE5A5AD38822}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87FDD990-8286-4C4F-AA53-CE5A5AD38822}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87FDD990-8286-4C4F-AA53-CE5A5AD38822}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87FDD990-8286-4C4F-AA53-CE5A5AD38822}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2972E174-7495-4674-A77B-C26E68AA8FA1}
+	EndGlobalSection
+EndGlobal
