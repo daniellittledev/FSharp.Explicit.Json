@@ -1,6 +1,7 @@
-﻿module FSharp.Explicit.Json.ParserTests
+module FSharp.Explicit.Json.ParserTests
 
 open Expecto
+open Expecto.Flip.Expect
 open System.Text.Json
 open FsToolkit.ErrorHandling
 
@@ -13,6 +14,10 @@ module TestTypes =
     type UnionA =
         | Alpha of ObjectA
         | Beta
+
+let parse (json: string) f =
+    let doc = JsonDocument.Parse(json)
+    Parse.document f doc
 
 let tests =
     testList "Parser Tests" [
@@ -31,15 +36,16 @@ let tests =
 
             let result =
                 doc
-                |> Parse.document (fun parse -> validation {
+                |> Parse.document (fun node -> validation {
 
-                    let! typeName = parse.string "type"
+                    let! typeName = node.prop "type" Parse.string
                     and! prop1 =
-                        parse.object "prop1" (fun parse ->
-                            validation {
-                                let! propA = parse.string "propA"
+                        let parseObj =
+                            Parse.object <| fun node -> validation {
+                                let! propA = node.prop "propA" Parse.string
                                 return { propA = propA }
-                            })
+                            }
+                        node.prop "prop1" parseObj
 
                     return!
                         match typeName with
@@ -50,4 +56,21 @@ let tests =
             printfn "%A" result
             ()
 
+        testList "Parse Primitives" [
+        
+            testCase "Parse unit" <| fun _ ->
+                let expected = Ok ()
+                let actual = parse "null" Parse.unit
+                equal "null -> Ok ()" expected actual
+
+            testCase "Parse int" <| fun _ ->
+                let expected = Ok 12
+                let actual = parse "12" Parse.int
+                equal "null -> Ok ()" expected actual
+
+            testCase "Parse decimal" <| fun _ ->
+                let expected = Ok 0.1111111111111111111111111111m
+                let actual = parse "0.1111111111111111111111111111" Parse.decimal
+                equal "null -> Ok ()" expected actual
+        ]
     ]

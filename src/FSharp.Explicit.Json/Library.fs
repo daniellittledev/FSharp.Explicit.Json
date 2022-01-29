@@ -17,50 +17,48 @@ module Parse =
     type ParserContext(element: JsonElement) =
         member _.Element = element
 
-    let prop (propertyName: string) (element: JsonElement) : Result<JsonElement, JsonParserError<'e>> = result {
-        let propExists, element = element.TryGetProperty(propertyName)
+    type Parser<'t, 'e> = ParserContext -> Validation<'t, JsonParserError<'e>>
+
+    let prop (propertyName: string) (context: ParserContext) : Validation<ParserContext, JsonParserError<'e>> = validation {
+        let propExists, element = context.Element.TryGetProperty(propertyName)
         if propExists then
-            return element
+            return ParserContext element
         else
             return! MissingProperty propertyName |> Error
     }
 
-    let getValue (jsonValueKind: JsonValueKind) (valueGetter: JsonElement -> 't) (element: JsonElement) = result {
+    let getValue (jsonValueKind: JsonValueKind) (valueGetter: JsonElement -> 't) (context: ParserContext) = validation {
+        let element = context.Element
         if element.ValueKind <> jsonValueKind then
             return! (ExpectedType jsonValueKind, ActualType element.ValueKind) |> UnexpectedType |> Error
         else
             return valueGetter element
     }
 
-    let string (propertyName: string) (element: JsonElement) : Result<string, JsonParserError<'e>> = result {
-        let! property = prop propertyName element
-        let! value = getValue JsonValueKind.String (fun e -> e.GetString()) property
-        return value
-    }
+    let unit (context: ParserContext) : Validation<unit, JsonParserError<'e>> =
+        getValue JsonValueKind.Null (fun _ -> ()) context
 
-    let int (propertyName: string) (element: JsonElement) : Result<int, JsonParserError<'e>> = result {
-        let! property = prop propertyName element
-        let! value = getValue JsonValueKind.Number (fun e -> e.GetInt32()) property
-        return value
-    }
+    let int (context: ParserContext) : Validation<int, JsonParserError<'e>> =
+        getValue JsonValueKind.Number (fun e -> e.GetInt32()) context
 
-    let object
-        (propertyName: string)
-        (mapper: JsonElement -> Result<'t, JsonParserError<'e> list>)
-        (element: JsonElement)
-        : Result<'t, JsonParserError<'e> list> = validation {
-        let! value = prop propertyName element
-        return! value |> mapper
+    let decimal (context: ParserContext) : Validation<decimal, JsonParserError<'e>> =
+        getValue JsonValueKind.Number (fun e -> e.GetDecimal()) context
+
+    let string (context: ParserContext) : Validation<string, JsonParserError<'e>> =
+        getValue JsonValueKind.String (fun e -> e.GetString()) context
+
+    let object (parse: ParserContext -> Validation<'t, JsonParserError<'e>>) (context: ParserContext) : Validation<'t, JsonParserError<'e>> = validation {
+        let! value = getValue JsonValueKind.Object (fun _ -> ()) context
+        return! parse context
     }
 
     type ParserContext with
-        member x.object (propertyName: string) (parser: ParserContext -> Result<'t, JsonParserError<'e> list>) =
-            x.Element |> object propertyName (fun e -> parser (ParserContext e))
+        member this.prop (propertyName: string) (parser: Parser<'t, 'e>) = validation {
+            let! value = prop propertyName this
+            return! parser value
+        }
 
-    type ParserContext with
-        member x.string(propertyName: string) = x.Element |> string propertyName
-
-    let document (parserResult: ParserContext -> Result<'t, JsonParserError<'e> list>) (document: JsonDocument) =
+    let document (parserResult: ParserContext -> Validation<'t, JsonParserError<'e>>) (document: JsonDocument) =
         ParserContext document.RootElement |> parserResult
 
 module Render =
