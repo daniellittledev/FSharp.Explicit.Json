@@ -72,5 +72,40 @@ let tests =
                 let expected = Ok 0.1111111111111111111111111111m
                 let actual = parse "0.1111111111111111111111111111" Parse.decimal
                 equal "null -> Ok ()" expected actual
+
+            // Parse Numeric
+
+            // Parse DateTimeOffset/DateTime/Date
+
+            // Parse TimeSpan
+
+            // Parse Enum
+
+            testCase "Parse list" <| fun _ ->
+                let expected = Ok [ 1; 2; 3 ]
+                let actual = parse "[1, 2, 3]" (Parse.list Parse.int)
+                equal "[1, 2, 3] -> Ok [1; 2; 3]" expected actual
         ]
+
+        // Parse Option
+
+        testList "Parse Tuples" [
+            testCase "Parse Tuple2" <| fun _ ->
+                let expected = Ok(1, "string")
+
+                let json = """[1, "string"]"""
+                let actual = parse json (Parse.tuple2 Parse.int Parse.string)
+
+                
+                equal $"""{json} -> (1, "string")""" expected actual
+
+            testCase "Parse Tuple2 types mismatch" <| fun _ ->
+                ()
+        ]
+
+        // Parse Union
+
+        // Parse OneOf
+
+        // Parse Auto Object
     ]
