@@ -9,8 +9,23 @@
     <WarnOn>3390;$(WarnOn)</WarnOn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageId>FSharp.Explicit.Json</PackageId>
+    <Version>0.0.1-beta</Version>
+    <Authors>Daniel Little</Authors>
+    <PackageTags>FSharp;Explicit;JSON</PackageTags>
+    <Description>
+      An explicit JSON serialisation library based on System.Text.Json that uses explicit mappings to parse JSON.
+      For readme see https://github.com/daniellittledev/FSharp.Explicit.Json
+    </Description>
+    <PackageLicenseUrl>https://github.com/daniellittledev/FSharp.Explicit.Json/blob/main/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/daniellittledev/FSharp.Explicit.Json</PackageProjectUrl>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="Library.fs" />
+    <Compile Include="Common.fs" />
+    <Compile Include="Render.fs" />
+    <Compile Include="Parser.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="RenderTests.fs" />
     <Compile Include="ParserTests.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

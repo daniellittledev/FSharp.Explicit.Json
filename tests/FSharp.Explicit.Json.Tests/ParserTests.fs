@@ -1,9 +1,10 @@
-module FSharp.Explicit.Json.ParserTests
+﻿module FSharp.Explicit.Json.ParserTests
 
 open Expecto
 open Expecto.Flip.Expect
 open System.Text.Json
 open FsToolkit.ErrorHandling
+open FSharp.Explicit.Json.Parse
 
 [<AutoOpen>]
 module TestTypes =

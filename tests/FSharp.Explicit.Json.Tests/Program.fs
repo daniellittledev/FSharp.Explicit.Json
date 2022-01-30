@@ -6,6 +6,7 @@ open Expecto
 [<Tests>]
 let allTests =
     testList "All Tests" [
+        RenderTests.tests
         ParserTests.tests
     ]
 
