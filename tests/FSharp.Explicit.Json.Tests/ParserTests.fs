@@ -7,14 +7,23 @@ open FsToolkit.ErrorHandling
 open FSharp.Explicit.Json.Parse
 
 [<AutoOpen>]
-module TestTypes =
-    type ObjectB = { propA: string }
+module rec TestTypes =
+    type Name = string
+    type Scalar = { name: Name; value: decimal }
+    type Vector = { name: Name; value: decimal list }
+    type Operation = { name: string; valueA: Value; valueB: Value }
 
-    type ObjectA = { prop1: ObjectB }
+    type Formula =
+    | Add of Operation
+    | Subtract of Operation
 
-    type UnionA =
-        | Alpha of ObjectA
-        | Beta
+    type Value =
+    | None
+    | Reference of Name
+    | Scalar of Scalar
+    | Vector of Vector
+    | Formula of Formula
+
 
 let parse (json: string) f =
     let doc = JsonDocument.Parse(json)
@@ -27,32 +36,58 @@ let tests =
 
             let json =
                 """{
-                    "type": "Alpha",
-                    "prop1": {
-                        "propA": "Test"
+                    "type": "Formula",
+                    "name": "Test",
+                    "valueA": "Value1",
+                    "valueB": {
+                        "type": "Vector",
+                        "value": [1, 2, 3]
                     }
                 }"""
 
             let doc = JsonDocument.Parse(json)
 
-            let result =
-                doc
-                |> Parse.document (fun node -> validation {
-
+            let rec parseValue (node: ParserContext) = validation {
+                match node.NodeType with
+                | Null ->
+                    return None
+                | String ->
+                    let! name = Parse.string node
+                    return Reference name
+                | Object ->
                     let! typeName = node.prop "type" Parse.string
-                    and! prop1 =
-                        let parseObj =
-                            Parse.object <| fun node -> validation {
-                                let! propA = node.prop "propA" Parse.string
-                                return { propA = propA }
-                            }
-                        node.prop "prop1" parseObj
 
-                    return!
+                    return! validation {
+                        let! name = node.prop "name" Parse.string
                         match typeName with
-                        | "Alpha" -> Alpha { prop1 = prop1 } |> Ok
-                        | _ -> UserError "Expected known a DU name" |> Error
-                })
+                        | "Scalar" ->
+                            let! scalar = Parse.decimal node
+                            return Scalar { name = name; value = scalar}
+                        | "Vector" ->
+                            let! vector = Parse.list Parse.decimal node
+                            return Vector { name = name; value = vector}
+                        | "Add"
+                        | "Subtract" ->
+                            let! typeCreator =
+                                match typeName with
+                                | "Add" -> Ok Add
+                                | "Subtract" -> Ok Subtract
+                                | _ -> Error (UserError "Unexpected formula type")
+                            let! valueA = node.prop "valueA" parseValue
+                            and! valueB = node.prop "valueB" parseValue
+                            return Formula (typeCreator {
+                                name = name
+                                valueA = valueA
+                                valueB = valueB
+                            })
+                        | _ ->
+                            return! Error (JsonParserError.UserError "Unexpected type when matching on value")
+                    }
+                | x ->
+                    return! Error (JsonParserError.UnexpectedType (Expected Object, Actual x))
+            }
+
+            let result = doc |> Parse.document parseValue
 
             printfn "%A" result
             ()
@@ -92,16 +127,32 @@ let tests =
 
         testList "Parse Tuples" [
             testCase "Parse Tuple2" <| fun _ ->
-                let expected = Ok(1, "string")
+                let expected = Ok(1, "a")
 
-                let json = """[1, "string"]"""
+                let json = """[1, "a"]"""
                 let actual = parse json (Parse.tuple2 Parse.int Parse.string)
 
-                
-                equal $"""{json} -> (1, "string")""" expected actual
+                equal $"""{json} -> (1, "a")""" expected actual
 
             testCase "Parse Tuple2 types mismatch" <| fun _ ->
-                ()
+                let expected =
+                    Error [
+                        UnexpectedType (Expected Number, Actual Bool)
+                        UnexpectedType (Expected String, Actual Number)
+                    ]
+
+                let json = """[false, 1]"""
+                let actual = parse json (Parse.tuple2 Parse.int Parse.string)
+
+                equal $"""{json} -> Type Error for (int * string)""" expected actual
+
+            testCase "Parse Tuple3" <| fun _ ->
+                let expected = Ok(1, "a", false)
+
+                let json = """[1, "a", false]"""
+                let actual = parse json (Parse.tuple3 Parse.int Parse.string Parse.bool)
+
+                equal $"""{json} -> (1, "a", false)""" expected actual
         ]
 
         // Parse Union
