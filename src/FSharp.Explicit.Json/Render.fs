@@ -33,6 +33,9 @@ let inline prop (propertyName: string) (render: Render) : Render =
 
 // null
 
+let inline unit () : Render =
+    Render(fun (x: Utf8JsonWriter) -> x.WriteNullValue ())
+
 let inline string (value: string) : Render =
     Render(fun (x: Utf8JsonWriter) -> x.WriteStringValue value)
 
