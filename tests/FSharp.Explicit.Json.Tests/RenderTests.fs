@@ -56,13 +56,44 @@ let tests =
                 let expected = "null"
                 equal "JSON is equal" expected jsonText
 
-            // Render Number
+            testCase "Render Byte" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.unit ()
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "null"
+                equal "JSON is equal" expected jsonText
 
-            // Parse Dates
+            testCase "Render Int" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.int 1
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "1"
+                equal "JSON is equal" expected jsonText
+            
+            testCase "Render Decimal" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.decimal 2m
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "2"
+                equal "JSON is equal" expected jsonText
 
-            // Parse TimeSpan
+            testCase "Render DateTime" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.datetime (DateTime(2000, 01, 01, 1, 1, 1, DateTimeKind.Utc))
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"2000-01-01T01:01:01Z\""
+                equal "JSON is equal" expected jsonText
 
-            // Parse Enum
+            testCase "Render DateTimeOffset" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.datetimeoffset (DateTimeOffset(2000, 01, 01, 1, 1, 1, TimeSpan.FromHours 10))
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"2000-01-01T01:01:01+10:00\""
+                equal "JSON is equal" expected jsonText
+
+            // Render TimeSpan
+
+            // Render Enum
 
             // Render Array
         ]
@@ -71,9 +102,9 @@ let tests =
 
         // Render Tuples
 
-        // Render Union
+        // Render Discriminated Union
 
-        // Render OneOf
+        // Render Choice/Union/OneOf
 
         // Render Auto Object
     ]

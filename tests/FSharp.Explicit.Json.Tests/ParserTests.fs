@@ -162,9 +162,9 @@ let tests =
                 equal $"""{json} -> (1, "a", false)""" expected actual
         ]
 
-        // Parse Union
+        // Parse Discriminated Union
 
-        // Parse OneOf
+        // Parse Choice/Union/OneOf
 
         // Parse Auto Object
     ]
