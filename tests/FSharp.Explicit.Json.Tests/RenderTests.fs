@@ -1,4 +1,4 @@
-module FSharp.Explicit.Json.RenderTests
+﻿module FSharp.Explicit.Json.RenderTests
 
 open System
 open Expecto
@@ -49,7 +49,12 @@ let tests =
 
         testList "Render Primitives" [
         
-            // Render Unit
+            testCase "Render Unit" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.unit ()
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "null"
+                equal "JSON is equal" expected jsonText
 
             // Render Number
 
