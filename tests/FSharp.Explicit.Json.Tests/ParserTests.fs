@@ -100,14 +100,21 @@ let tests =
                 equal "null -> Ok ()" expected actual
 
             testCase "Parse int" <| fun _ ->
-                let expected = Ok 12
-                let actual = parse "12" Parse.int
-                equal "null -> Ok ()" expected actual
+                let expected = Ok 2147483647
+                let actual = parse "2147483647" Parse.int
+                equal "2147483647 -> Ok 2147483647" expected actual
+
+            testCase "Parse out of range int" <| fun _ ->
+                let json = "2147483648"
+                let expected = Error [ ValueOutOfRange (typeof<int32>, json) ]
+                let actual = parse json Parse.int
+                equal (sprintf "%A -> %A" json expected) expected actual
 
             testCase "Parse decimal" <| fun _ ->
                 let expected = Ok 0.1111111111111111111111111111m
-                let actual = parse "0.1111111111111111111111111111" Parse.decimal
-                equal "null -> Ok ()" expected actual
+                let json = "0.1111111111111111111111111111"
+                let actual = parse json Parse.decimal
+                equal (sprintf "%A -> %A" json expected) expected actual
 
             // Parse Numeric
 

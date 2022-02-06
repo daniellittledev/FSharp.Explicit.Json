@@ -1,5 +1,6 @@
 ﻿module FSharp.Explicit.Json.Parse
 
+open System
 open System.Text.Json
 open FsToolkit.ErrorHandling
 
@@ -17,7 +18,15 @@ type JsonParserError<'t> =
     | MissingProperty of string
     | UnexpectedType of Expected<NodeType> * Actual<NodeType>
     | InvalidTupleLength of Expected<int> * Actual<int>
+    | ValueOutOfRange of Type * string
     | UserError of 't
+    member this.ToMessage(toMessage: 't -> string) =
+        match this with
+        | MissingProperty name -> $"Object has missing property named {name}"
+        | UnexpectedType (expected, actual) -> $"Parser was expecting type {Expected expected} but was {Actual actual}"
+        | InvalidTupleLength (expected, actual) -> $"Parser was a tuple with length {Expected expected} but was {Actual actual}"
+        | ValueOutOfRange (targetType, rawValue) -> $"The value {rawValue} is not a valid {targetType} "
+        | UserError x -> toMessage x
 
 let kindToType (jsonValueKind: JsonValueKind) =
     match jsonValueKind with
@@ -76,7 +85,11 @@ let int64 (context: ParserContext) : Validation<int64, JsonParserError<'e>> =
     getValue Number (fun e -> e.GetInt64() |> Ok) context
 
 let int (context: ParserContext) : Validation<int, JsonParserError<'e>> =
-    getValue Number (fun e -> e.GetInt32() |> Ok) context
+    getValue Number (fun e ->
+        match e.TryGetInt32() with
+        | true, x -> Ok x
+        | false, _ -> Error [ValueOutOfRange (typeof<int32>, e.GetRawText())]
+    ) context
 
 let single (context: ParserContext) : Validation<float32, JsonParserError<'e>> =
     getValue Number (fun e -> e.GetSingle() |> Ok) context
