@@ -76,13 +76,25 @@ let bool (context: ParserContext) : Validation<bool, JsonParserError<'e>> =
     getValue Bool (fun e -> e.GetBoolean() |> Ok) context
 
 let byte (context: ParserContext) : Validation<byte, JsonParserError<'e>> =
-    getValue Number (fun e -> e.GetByte() |> Ok) context
+    getValue Number (fun e ->
+        match e.TryGetByte() with
+        | true, x -> Ok x
+        | false, _ -> Error [ValueOutOfRange (typeof<byte>, e.GetRawText())]
+    ) context
 
 let int16 (context: ParserContext) : Validation<int16, JsonParserError<'e>> =
-    getValue Number (fun e -> e.GetInt16() |> Ok) context
+    getValue Number (fun e ->
+        match e.TryGetInt16() with
+        | true, x -> Ok x
+        | false, _ -> Error [ValueOutOfRange (typeof<int16>, e.GetRawText())]
+    ) context
 
 let int64 (context: ParserContext) : Validation<int64, JsonParserError<'e>> =
-    getValue Number (fun e -> e.GetInt64() |> Ok) context
+    getValue Number (fun e ->
+        match e.TryGetInt64() with
+        | true, x -> Ok x
+        | false, _ -> Error [ValueOutOfRange (typeof<int64>, e.GetRawText())]
+    ) context
 
 let int (context: ParserContext) : Validation<int, JsonParserError<'e>> =
     getValue Number (fun e ->
@@ -92,13 +104,25 @@ let int (context: ParserContext) : Validation<int, JsonParserError<'e>> =
     ) context
 
 let single (context: ParserContext) : Validation<float32, JsonParserError<'e>> =
-    getValue Number (fun e -> e.GetSingle() |> Ok) context
+    getValue Number (fun e ->
+        match e.TryGetSingle() with
+        | true, x -> Ok x
+        | false, _ -> Error [ValueOutOfRange (typeof<float32>, e.GetRawText())]
+    ) context
 
 let double (context: ParserContext) : Validation<double, JsonParserError<'e>> =
-    getValue Number (fun e -> e.GetDouble() |> Ok) context
+    getValue Number (fun e ->
+        match e.TryGetDouble() with
+        | true, x -> Ok x
+        | false, _ -> Error [ValueOutOfRange (typeof<double>, e.GetRawText())]
+    ) context
 
 let decimal (context: ParserContext) : Validation<decimal, JsonParserError<'e>> =
-    getValue Number (fun e -> e.GetDecimal() |> Ok) context
+    getValue Number (fun e ->
+        match e.TryGetDecimal() with
+        | true, x -> Ok x
+        | false, _ -> Error [ValueOutOfRange (typeof<decimal>, e.GetRawText())]
+    ) context
 
 let string (context: ParserContext) : Validation<string, JsonParserError<'e>> =
     getValue String (fun e -> e.GetString() |> Ok) context

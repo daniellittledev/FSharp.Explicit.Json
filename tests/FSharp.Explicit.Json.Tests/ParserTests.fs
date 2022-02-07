@@ -99,6 +99,16 @@ let tests =
                 let actual = parse "null" Parse.unit
                 equal "null -> Ok ()" expected actual
 
+            testCase "Parse bool" <| fun _ ->
+                let expected = Ok true
+                let actual = parse "true" Parse.bool
+                equal "true -> Ok true" expected actual
+
+            testCase "Parse byte" <| fun _ ->
+                let expected = Ok 256
+                let actual = parse "256" Parse.int
+                equal "256 -> Ok 256" expected actual
+
             testCase "Parse int" <| fun _ ->
                 let expected = Ok 2147483647
                 let actual = parse "2147483647" Parse.int
