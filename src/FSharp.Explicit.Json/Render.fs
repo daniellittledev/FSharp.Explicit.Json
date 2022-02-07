@@ -96,5 +96,35 @@ let inline datetime (value: DateTime) : Render =
 let inline datetimeoffset (value: DateTimeOffset) : Render =
     Render(fun (x: Utf8JsonWriter) -> x.WriteStringValue value)
 
+let inline timespan (value: TimeSpan) : Render =
+    Render(fun (x: Utf8JsonWriter) -> x.WriteStringValue (value.ToString("c")))
+
+let inline enum (value: Enum) : Render =
+    Render(fun (x: Utf8JsonWriter) ->
+        let baseValue = value :> obj
+        let enumType = Enum.GetUnderlyingType(value.GetType())
+        if enumType = typeof<byte> then
+            (baseValue :?> int) |> x.WriteNumberValue
+        elif enumType = typeof<int> then
+            (baseValue :?> int) |> x.WriteNumberValue
+        elif enumType = typeof<int64> then
+            (baseValue :?> int64) |> x.WriteNumberValue
+        elif enumType = typeof<float> then
+            (baseValue :?> float) |> x.WriteNumberValue
+        elif enumType = typeof<float32> then
+            (baseValue :?> float32) |> x.WriteNumberValue
+        elif enumType = typeof<decimal> then
+            (baseValue :?> decimal) |> x.WriteNumberValue
+        elif enumType = typeof<uint32> then
+            (baseValue :?> uint32) |> x.WriteNumberValue
+        elif enumType = typeof<uint64> then
+            (baseValue :?> uint64) |> x.WriteNumberValue
+        else
+            raise (NotSupportedException (sprintf "Enum has an unsupported base type %A" (x.GetType())))
+    )
+
+let inline enumName (value: 't when 't :> Enum) : Render =
+    Render(fun (x: Utf8JsonWriter) -> Enum.GetName(typeof<'t>, value) |> x.WriteStringValue)
+
 let inline guid (value: Guid) : Render =
     Render(fun (x: Utf8JsonWriter) -> x.WriteStringValue value)

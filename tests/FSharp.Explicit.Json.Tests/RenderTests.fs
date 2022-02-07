@@ -7,10 +7,17 @@ open System.Text.Json
 open System.IO
 open FSharp.Explicit.Json.Render
 
-type JsonWriter() =
-    let options = JsonWriterOptions(Indented = true)
+type IndentStyle =
+    | None
+    | Indented
+
+type JsonWriter(style: IndentStyle) =
+
+    let options = JsonWriterOptions(Indented = match style with None -> false | Indented -> true)
     let stream = new MemoryStream()
     let writer = new Utf8JsonWriter(stream, options)
+
+    new() = new JsonWriter(IndentStyle.None)
 
     member _.GetJsonString(render: Render) =
         render.Invoke(writer)
@@ -28,7 +35,7 @@ let tests =
     testList "Render Tests" [
 
         testCase "Sample" <| fun _ ->
-            use jsonWriter = new JsonWriter()
+            use jsonWriter = new JsonWriter(IndentStyle.Indented)
             let jsonRender =
                 object {
                     prop "alpha" (object {
@@ -91,11 +98,37 @@ let tests =
                 let expected = "\"2000-01-01T01:01:01+10:00\""
                 equal "JSON is equal" expected jsonText
 
-            // Render TimeSpan
+            testCase "Render TimeSpan" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.timespan (TimeSpan.FromMinutes 90)
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"01:30:00\""
+                equal "JSON is equal" expected jsonText
 
-            // Render Enum
+            testCase "Render Enum" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.enum (System.DayOfWeek.Monday)
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "1"
+                equal "JSON is equal" expected jsonText
 
-            // Render Array
+            testCase "Render Enum Name" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = Render.enumName System.DayOfWeek.Monday
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"Monday\""
+                equal "JSON is equal" expected jsonText
+
+            testCase "Render Array" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = array {
+                    Render.enumName System.DayOfWeek.Monday
+                    Render.enumName System.DayOfWeek.Tuesday
+                    Render.enumName System.DayOfWeek.Wednesday
+                }
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "[\"Monday\",\"Tuesday\",\"Wednesday\"]"
+                equal "JSON is equal" expected jsonText
         ]
 
         // Render Option
