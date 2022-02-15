@@ -24,6 +24,11 @@ module rec TestTypes =
     | Vector of Vector
     | Formula of Formula
 
+let leftError (path: string list) (reason: JsonParserErrorReason<'t>) =
+    [{ path = path; reason = reason }] |> Error
+
+let error (path: string list) (reason: JsonParserErrorReason<'t>) =
+    { path = path; reason = reason }
 
 let parse (json: string) f =
     let doc = JsonDocument.Parse(json)
@@ -72,7 +77,7 @@ let tests =
                                 match typeName with
                                 | "Add" -> Ok Add
                                 | "Subtract" -> Ok Subtract
-                                | _ -> Error (UserError "Unexpected formula type")
+                                | _ -> UserError "Unexpected formula type" |> Parse.liftError node
                             let! valueA = node.prop "valueA" parseValue
                             and! valueB = node.prop "valueB" parseValue
                             return Formula (typeCreator {
@@ -81,10 +86,10 @@ let tests =
                                 valueB = valueB
                             })
                         | _ ->
-                            return! Error (JsonParserError.UserError "Unexpected type when matching on value")
+                            return! UserError "Unexpected type when matching on value"  |> Parse.liftError node
                     }
                 | x ->
-                    return! Error (JsonParserError.UnexpectedType (Expected Object, Actual x))
+                    return! UnexpectedType (Expected Object, Actual x) |> Parse.liftError node
             }
 
             let result = doc |> Parse.document parseValue
@@ -116,7 +121,7 @@ let tests =
 
             testCase "Parse out of range int" <| fun _ ->
                 let json = "2147483648"
-                let expected = Error [ ValueOutOfRange (typeof<int32>, json) ]
+                let expected = ValueOutOfRange (typeof<int32>, json) |> leftError []
                 let actual = parse json Parse.int
                 equal (sprintf "%A -> %A" json expected) expected actual
 
@@ -154,8 +159,8 @@ let tests =
             testCase "Parse Tuple2 types mismatch" <| fun _ ->
                 let expected =
                     Error [
-                        UnexpectedType (Expected Number, Actual Bool)
-                        UnexpectedType (Expected String, Actual Number)
+                        UnexpectedType (Expected Number, Actual Bool) |> error []
+                        UnexpectedType (Expected String, Actual Number) |> error []
                     ]
 
                 let json = """[false, 1]"""
@@ -170,6 +175,29 @@ let tests =
                 let actual = parse json (Parse.tuple3 Parse.int Parse.string Parse.bool)
 
                 equal $"""{json} -> (1, "a", false)""" expected actual
+        ]
+
+        testList "Parse Error Handling" [
+            testCase "Missing Properties" <| fun _ ->
+        
+                let json = "{}"
+        
+                let doc = JsonDocument.Parse(json)
+                let actual = doc |> Parse.document (fun node -> validation {
+                    let! typeName = node.prop "type" Parse.string
+                    and! prop1 = node.prop "prop1" Parse.string
+                    and! prop2 = node.prop "prop2" Parse.string
+                    ()
+                })
+        
+                let expected =
+                    Error [
+                        { path = []; reason = MissingProperty "type"}
+                        { path = []; reason = MissingProperty "prop1"}
+                        { path = []; reason = MissingProperty "prop2"}
+                    ]
+
+                equal $"""All three properties are missing""" expected actual
         ]
 
         // Parse Discriminated Union

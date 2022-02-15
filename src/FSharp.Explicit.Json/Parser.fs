@@ -14,7 +14,7 @@ type NodeType =
     | Bool
     | Null
 
-type JsonParserError<'t> =
+type JsonParserErrorReason<'t> =
     | MissingProperty of string
     | UnexpectedType of Expected<NodeType> * Actual<NodeType>
     | InvalidTupleLength of Expected<int> * Actual<int>
@@ -28,6 +28,12 @@ type JsonParserError<'t> =
         | ValueOutOfRange (targetType, rawValue) -> $"The value {rawValue} is not a valid {targetType} "
         | UserError x -> toMessage x
 
+type JsonParserError<'t> =
+    {
+        path: string list
+        reason: JsonParserErrorReason<'t>
+    }
+
 let kindToType (jsonValueKind: JsonValueKind) =
     match jsonValueKind with
     | JsonValueKind.Undefined -> Undefined
@@ -40,96 +46,105 @@ let kindToType (jsonValueKind: JsonValueKind) =
     | JsonValueKind.Null -> Null
     | _ -> failwithf "Panic: Missing case for JsonValueKind when convertint to NodeType"
 
-type ParserContext(element: JsonElement) =
+type ParserContext(path: string list, element: JsonElement) =
+
+    new(element: JsonElement) = ParserContext([], element)
     member _.Element = element
+    member _.Path = path
     member _.NodeType = kindToType element.ValueKind
+
+let error (context: ParserContext) (reason: JsonParserErrorReason<'t>) =
+    [{ path = context.Path; reason = reason }] |> Error
+
+let liftError (context: ParserContext) (reason: JsonParserErrorReason<'t>) =
+    [{ path = context.Path; reason = reason }] |> Error
 
 type Parser<'t, 'e> = ParserContext -> Validation<'t, JsonParserError<'e>>
 
 let prop (propertyName: string) (context: ParserContext) : Validation<ParserContext, JsonParserError<'e>> = validation {
     let propExists, element = context.Element.TryGetProperty(propertyName)
     if propExists then
-        return ParserContext element
+        return ParserContext (propertyName :: context.Path, element)
     else
-        return! MissingProperty propertyName |> Error
+        return! MissingProperty propertyName |> error context
 }
 
 let getValue (nodeType: NodeType) (valueGetter: JsonElement -> Validation<'t, JsonParserError<'e>>) (context: ParserContext) = validation {
     let element = context.Element
     let actualType = context.NodeType
     if actualType <> nodeType then
-        return! (Expected nodeType, Actual actualType) |> UnexpectedType |> Error
+        return! (Expected nodeType, Actual actualType) |> UnexpectedType |> error context
     else
         return! valueGetter element
 }
 
-let validateTupleLength (expectedLength: int) (actualLength: int)  =
+let validateTupleLength (expectedLength: int) (actualLength: int) (context: ParserContext) =
     if expectedLength = actualLength then
         Ok ()
     else
-        Error (InvalidTupleLength (Expected expectedLength, Actual actualLength))
+        InvalidTupleLength (Expected expectedLength, Actual actualLength) |> error context
 
-let unit (context: ParserContext) : Validation<unit, JsonParserError<'e>> =
+let unit (context: ParserContext) =
     getValue Null (fun _ -> Ok ()) context
 
-let bool (context: ParserContext) : Validation<bool, JsonParserError<'e>> =
+let bool (context: ParserContext) =
     getValue Bool (fun e -> e.GetBoolean() |> Ok) context
 
-let byte (context: ParserContext) : Validation<byte, JsonParserError<'e>> =
+let byte (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetByte() with
         | true, x -> Ok x
-        | false, _ -> Error [ValueOutOfRange (typeof<byte>, e.GetRawText())]
+        | false, _ -> ValueOutOfRange (typeof<byte>, e.GetRawText()) |> error context
     ) context
 
-let int16 (context: ParserContext) : Validation<int16, JsonParserError<'e>> =
+let int16 (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetInt16() with
         | true, x -> Ok x
-        | false, _ -> Error [ValueOutOfRange (typeof<int16>, e.GetRawText())]
+        | false, _ -> ValueOutOfRange (typeof<int16>, e.GetRawText()) |> error context
     ) context
 
-let int64 (context: ParserContext) : Validation<int64, JsonParserError<'e>> =
+let int64 (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetInt64() with
         | true, x -> Ok x
-        | false, _ -> Error [ValueOutOfRange (typeof<int64>, e.GetRawText())]
+        | false, _ -> ValueOutOfRange (typeof<int64>, e.GetRawText()) |> error context
     ) context
 
-let int (context: ParserContext) : Validation<int, JsonParserError<'e>> =
+let int (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetInt32() with
         | true, x -> Ok x
-        | false, _ -> Error [ValueOutOfRange (typeof<int32>, e.GetRawText())]
+        | false, _ -> ValueOutOfRange (typeof<int32>, e.GetRawText()) |> error context
     ) context
 
-let single (context: ParserContext) : Validation<float32, JsonParserError<'e>> =
+let single (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetSingle() with
         | true, x -> Ok x
-        | false, _ -> Error [ValueOutOfRange (typeof<float32>, e.GetRawText())]
+        | false, _ -> ValueOutOfRange (typeof<float32>, e.GetRawText()) |> error context
     ) context
 
-let double (context: ParserContext) : Validation<double, JsonParserError<'e>> =
+let double (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetDouble() with
         | true, x -> Ok x
-        | false, _ -> Error [ValueOutOfRange (typeof<double>, e.GetRawText())]
+        | false, _ -> ValueOutOfRange (typeof<double>, e.GetRawText()) |> error context
     ) context
 
-let decimal (context: ParserContext) : Validation<decimal, JsonParserError<'e>> =
+let decimal (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetDecimal() with
         | true, x -> Ok x
-        | false, _ -> Error [ValueOutOfRange (typeof<decimal>, e.GetRawText())]
+        | false, _ -> ValueOutOfRange (typeof<decimal>, e.GetRawText()) |> error context
     ) context
 
-let string (context: ParserContext) : Validation<string, JsonParserError<'e>> =
+let string (context: ParserContext) =
     getValue String (fun e -> e.GetString() |> Ok) context
 
 let tuple2 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (context: ParserContext) : Validation<'a * 'b, JsonParserError<'e>> =
     getValue Array (fun e -> validation {
-        do! validateTupleLength 2 (e.GetArrayLength())
+        do! validateTupleLength 2 (e.GetArrayLength()) context
         let! item0 = parserA (ParserContext (e.Item 0))
         and! item1 = parserB (ParserContext (e.Item 1))
         return (item0, item1)
@@ -137,7 +152,7 @@ let tuple2 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (context: ParserC
 
 let tuple3 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (parserC: Parser<'c, 'e>) (context: ParserContext) : Validation<'a * 'b * 'c, JsonParserError<'e>> =
     getValue Array (fun e -> validation {
-        do! validateTupleLength 3 (e.GetArrayLength())
+        do! validateTupleLength 3 (e.GetArrayLength()) context
         let! item0 = parserA (ParserContext (e.Item 0))
         and! item1 = parserB (ParserContext (e.Item 1))
         and! item2 = parserC (ParserContext (e.Item 2))
