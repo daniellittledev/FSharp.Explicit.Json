@@ -1,4 +1,4 @@
-﻿module FSharp.Explicit.Json.RenderTests
+module FSharp.Explicit.Json.RenderTests
 
 open System
 open Expecto
@@ -8,16 +8,16 @@ open System.IO
 open FSharp.Explicit.Json.Render
 
 type IndentStyle =
-    | None
+    | Inline
     | Indented
 
 type JsonWriter(style: IndentStyle) =
 
-    let options = JsonWriterOptions(Indented = match style with None -> false | Indented -> true)
+    let options = JsonWriterOptions(Indented = match style with Inline -> false | Indented -> true)
     let stream = new MemoryStream()
     let writer = new Utf8JsonWriter(stream, options)
 
-    new() = new JsonWriter(IndentStyle.None)
+    new() = new JsonWriter(IndentStyle.Inline)
 
     member _.GetJsonString(render: Render) =
         render.Invoke(writer)
