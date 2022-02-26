@@ -1,4 +1,4 @@
-﻿module FSharp.Explicit.Json.Render
+module FSharp.Explicit.Json.Render
 
 open System
 open System.Text.Json
@@ -128,3 +128,8 @@ let inline enumName (value: 't when 't :> Enum) : Render =
 
 let inline guid (value: Guid) : Render =
     Render(fun (x: Utf8JsonWriter) -> x.WriteStringValue value)
+
+let inline option (render: 't -> Render) (value: 't option) : Render =
+    match value with
+    | Some some -> render some
+    | None -> unit ()

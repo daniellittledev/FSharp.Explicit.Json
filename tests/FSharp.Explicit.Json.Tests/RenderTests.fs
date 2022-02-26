@@ -132,6 +132,22 @@ let tests =
         ]
 
         // Render Option
+        testList "Render Option" [
+            
+            testCase "Render Some" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = (Some "Thing") |> Render.option Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"Thing\""
+                equal "Some renders value" expected jsonText
+
+            testCase "Render None" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = None |> Render.option Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "null"
+                equal "None renders null" expected jsonText
+        ]
 
         // Render Tuples
 
