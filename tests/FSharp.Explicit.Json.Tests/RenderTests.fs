@@ -1,4 +1,4 @@
-module FSharp.Explicit.Json.RenderTests
+﻿module FSharp.Explicit.Json.RenderTests
 
 open System
 open Expecto
@@ -150,6 +150,36 @@ let tests =
         ]
 
         // Render Tuples
+        testList "Render Tuples" [
+            
+            testCase "Render Tuple 2" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = (1, 2) |> Render.tuple2 Render.int Render.int
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "[1,2]"
+                equal "Renders Tuple 2" expected jsonText
+
+            testCase "Render Tuple 3" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = (1, 2, 3) |> Render.tuple3 Render.int Render.int Render.int
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "[1,2,3]"
+                equal "Renders Tuple 3" expected jsonText
+
+            testCase "Render Tuple 4" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = (1, 2, 3, 4) |> Render.tuple4 Render.int Render.int Render.int Render.int
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "[1,2,3,4]"
+                equal "Renders Tuple 4" expected jsonText
+
+            testCase "Render Tuple 5" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = (1, 2, 3, 4, 5) |> Render.tuple5 Render.int Render.int Render.int Render.int Render.int
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "[1,2,3,4,5]"
+                equal "Renders Tuple 5" expected jsonText
+        ]
 
         // Render Discriminated Union
 

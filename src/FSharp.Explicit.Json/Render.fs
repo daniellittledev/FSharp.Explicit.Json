@@ -1,4 +1,4 @@
-module FSharp.Explicit.Json.Render
+﻿module FSharp.Explicit.Json.Render
 
 open System
 open System.Text.Json
@@ -133,3 +133,15 @@ let inline option (render: 't -> Render) (value: 't option) : Render =
     match value with
     | Some some -> render some
     | None -> unit ()
+
+let inline tuple2 (renderA: 'a -> Render) (renderB: 'b -> Render) (a: 'a, b: 'b) : Render =
+    array { renderA a; renderB b }
+
+let inline tuple3 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (a: 'a, b: 'b, c: 'c) : Render =
+    array { renderA a; renderB b; renderC c}
+
+let inline tuple4 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (a: 'a, b: 'b, c: 'c, d: 'd) : Render =
+    array { renderA a; renderB b; renderC c; renderD d}
+
+let inline tuple5 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (a: 'a, b: 'b, c: 'c, d: 'd, e: 'e) : Render =
+    array { renderA a; renderB b; renderC c; renderD d; renderE e}
