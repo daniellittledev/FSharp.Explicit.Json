@@ -3,6 +3,7 @@
 open Expecto
 open Expecto.Flip.Expect
 open System
+open System.Globalization
 open System.Text.Json
 open FsToolkit.ErrorHandling
 open FSharp.Explicit.Json.Parse
@@ -166,12 +167,12 @@ let tests =
             testCase "Parse single" <| fun _ ->
                 let number = Single.MaxValue
                 let expected = Ok number
-                let json = number.ToString()
+                let json = number.ToString(CultureInfo.InvariantCulture)
                 let actual = parse json Parse.single
                 equal $"{json} -> Ok {json}" expected actual
 
             testCase "Parse out of range single" <| fun _ ->
-                let json = $"{Single.MaxValue.ToString()}0"
+                let json = $"{Single.MaxValue.ToString(CultureInfo.InvariantCulture)}0"
                 let expected = Ok Single.PositiveInfinity
                 let actual = parse json Parse.single
                 equal (sprintf "%A -> %A" json expected) expected actual
@@ -179,12 +180,12 @@ let tests =
             testCase "Parse double" <| fun _ ->
                 let number = Double.MaxValue
                 let expected = Ok number
-                let json = number.ToString()
+                let json = number.ToString(CultureInfo.InvariantCulture)
                 let actual = parse json Parse.double
                 equal $"{json} -> Ok {json}" expected actual
 
             testCase "Parse out of range double" <| fun _ ->
-                let json = $"{Double.MaxValue.ToString()}0"
+                let json = $"{Double.MaxValue.ToString(CultureInfo.InvariantCulture)}0"
                 let expected = Ok Double.PositiveInfinity
                 let actual = parse json Parse.double
                 equal (sprintf "%A -> %A" json expected) expected actual
@@ -192,12 +193,12 @@ let tests =
             testCase "Parse deciaml" <| fun _ ->
                 let number = System.Decimal.MaxValue
                 let expected = Ok number
-                let json = number.ToString()
+                let json = number.ToString(CultureInfo.InvariantCulture)
                 let actual = parse json Parse.decimal
                 equal $"{json} -> Ok {json}" expected actual
 
             testCase "Parse out of range decimal" <| fun _ ->
-                let json = $"{Decimal.MaxValue.ToString()}0"
+                let json = $"{Decimal.MaxValue.ToString(CultureInfo.InvariantCulture)}0"
                 let expected = ValueOutOfRange (typeof<decimal>, json) |> leftError []
                 let actual = parse json Parse.decimal
                 equal (sprintf "%A -> %A" json expected) expected actual
