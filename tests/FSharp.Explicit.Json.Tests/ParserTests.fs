@@ -31,6 +31,9 @@ let leftError (path: string list) (reason: JsonParserErrorReason<'t>) =
 let error (path: string list) (reason: JsonParserErrorReason<'t>) =
     { path = path; reason = reason }
 
+let jsonString (value: string) =
+    $"\"{value}\""
+
 let parse (json: string) f =
     let doc = JsonDocument.Parse(json)
     Parse.document f doc
@@ -199,11 +202,26 @@ let tests =
                 let actual = parse json Parse.decimal
                 equal (sprintf "%A -> %A" json expected) expected actual
 
-            // Parse Numeric
+            testCase "Parse DateTime" <| fun _ ->
+                let date = DateTime.MaxValue
+                let expected = Ok date
+                let json = date.ToString("o") |> jsonString
+                let actual = parse json Parse.dateTime
+                equal $"{json} -> Ok {json}" expected actual
 
-            // Parse DateTimeOffset/DateTime/Date
+            testCase "Parse DateTime Offset" <| fun _ ->
+                let date = new DateTimeOffset(DateTime.MaxValue, TimeSpan.FromHours(14))
+                let expected = Ok date
+                let json = date.ToString("o") |> jsonString
+                let actual = parse json Parse.dateTimeOffset
+                equal $"{json} -> Ok {json}" expected actual
 
-            // Parse TimeSpan
+            testCase "Parse TimeSpan" <| fun _ ->
+                let timespan = TimeSpan.MaxValue
+                let expected = Ok timespan
+                let json = timespan.ToString() |> jsonString
+                let actual = parse json Parse.timeSpan
+                equal $"{json} -> Ok {json}" expected actual
 
             // Parse Enum
 

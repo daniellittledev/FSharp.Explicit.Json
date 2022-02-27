@@ -3,6 +3,7 @@ module FSharp.Explicit.Json.Parse
 open System
 open System.Text.Json
 open FsToolkit.ErrorHandling
+open System.Globalization
 
 [<Struct>]
 type NodeType =
@@ -141,6 +142,30 @@ let decimal (context: ParserContext) =
 
 let string (context: ParserContext) =
     getValue String (fun e -> e.GetString() |> Ok) context
+
+let dateTime (context: ParserContext) =
+    getValue String (fun e ->
+        let value = e.GetString()
+        match DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind) with
+        | true, datetime -> Ok datetime
+        | false, _ -> ValueOutOfRange (typeof<DateTime>, value) |> error context
+    ) context
+
+let dateTimeOffset (context: ParserContext) =
+    getValue String (fun e ->
+        let value = e.GetString()
+        match DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, Globalization.DateTimeStyles.RoundtripKind) with
+        | true, datetime -> Ok datetime
+        | false, _ -> ValueOutOfRange (typeof<DateTimeOffset>, value) |> error context
+    ) context
+
+let timeSpan (context: ParserContext) =
+    getValue String (fun e ->
+        let value = e.GetString()
+        match TimeSpan.TryParse(value, CultureInfo.InvariantCulture) with
+        | true, timespan -> Ok timespan
+        | false, _ -> ValueOutOfRange (typeof<TimeSpan>, value) |> error context
+    ) context
 
 let tuple2 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (context: ParserContext) : Validation<'a * 'b, JsonParserError<'e>> =
     getValue Array (fun e -> validation {
