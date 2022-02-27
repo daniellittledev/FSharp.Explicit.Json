@@ -182,6 +182,19 @@ let tests =
         ]
 
         // Render Discriminated Union
+        testList "Render Discriminated Union" [
+            
+            testCase "Render Union Case" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = object {
+                    prop "type" <| Render.string "CaseA"
+                    prop "value" <| Render.int 1
+                }
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = """{"type":"CaseA","value":1}"""
+                equal "Renders Union Case" expected jsonText
+        ]
 
         // Render Choice/Union/OneOf
         testList "Render Choice" [
