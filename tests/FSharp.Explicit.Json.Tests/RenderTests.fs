@@ -1,4 +1,4 @@
-﻿module FSharp.Explicit.Json.RenderTests
+module FSharp.Explicit.Json.RenderTests
 
 open System
 open Expecto
@@ -184,6 +184,64 @@ let tests =
         // Render Discriminated Union
 
         // Render Choice/Union/OneOf
+        testList "Render Choice" [
+            
+            testCase "Render Choice1Of2" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = Choice1Of2 "1Of2" |> Render.choiceOf2 Render.string Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"1Of2\""
+                equal "Renders Choice Value" expected jsonText
+
+            testCase "Render Choice2Of2" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = Choice2Of2 "2Of2" |> Render.choiceOf2 Render.string Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"2Of2\""
+                equal "Renders Choice Value" expected jsonText
+
+            testCase "Render Choice3Of3" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = Choice3Of3 "3Of3" |> Render.choiceOf3 Render.string Render.string Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"3Of3\""
+                equal "Renders Choice Value" expected jsonText
+
+            testCase "Render Choice4Of4" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = Choice4Of4 "4Of4" |> Render.choiceOf4 Render.string Render.string Render.string Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"4Of4\""
+                equal "Renders Choice Value" expected jsonText
+
+            testCase "Render Choice5Of5" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = Choice5Of5 "5Of5" |> Render.choiceOf5 Render.string Render.string Render.string Render.string Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"5Of5\""
+                equal "Renders Choice Value" expected jsonText
+
+            testCase "Render Choice6Of6" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = Choice6Of6 "6Of6" |> Render.choiceOf6 Render.string Render.string Render.string Render.string Render.string Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"6Of6\""
+                equal "Renders Choice Value" expected jsonText
+                
+            testCase "Render Choice7Of7" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                // A union has an indeterminate structure so rendering is manual
+                let jsonRender = Choice7Of7 "7Of7" |> Render.choiceOf7 Render.string Render.string Render.string Render.string Render.string Render.string Render.string
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "\"7Of7\""
+                equal "Renders Choice Value" expected jsonText
+        ]
 
         // Render Auto Object
     ]

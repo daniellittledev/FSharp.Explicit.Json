@@ -1,4 +1,4 @@
-﻿module FSharp.Explicit.Json.Render
+module FSharp.Explicit.Json.Render
 
 open System
 open System.Text.Json
@@ -145,3 +145,48 @@ let inline tuple4 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -
 
 let inline tuple5 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (a: 'a, b: 'b, c: 'c, d: 'd, e: 'e) : Render =
     array { renderA a; renderB b; renderC c; renderD d; renderE e}
+
+let inline choiceOf2 (renderA: 'a -> Render) (renderB: 'b -> Render) (choice: Choice<'a, 'b>) : Render =
+    match choice with
+    | Choice1Of2 a -> renderA a
+    | Choice2Of2 b -> renderB b
+
+let inline choiceOf3 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (choice: Choice<'a, 'b, 'c>) : Render =
+    match choice with
+    | Choice1Of3 a -> renderA a
+    | Choice2Of3 b -> renderB b
+    | Choice3Of3 c -> renderC c
+
+let inline choiceOf4 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (choice: Choice<'a, 'b, 'c, 'd>) : Render =
+    match choice with
+    | Choice1Of4 a -> renderA a
+    | Choice2Of4 b -> renderB b
+    | Choice3Of4 c -> renderC c
+    | Choice4Of4 d -> renderD d
+
+let inline choiceOf5 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (choice: Choice<'a, 'b, 'c, 'd, 'e>) : Render =
+    match choice with
+    | Choice1Of5 a -> renderA a
+    | Choice2Of5 b -> renderB b
+    | Choice3Of5 c -> renderC c
+    | Choice4Of5 d -> renderD d
+    | Choice5Of5 e -> renderE e
+
+let inline choiceOf6 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (renderF: 'f -> Render) (choice: Choice<'a, 'b, 'c, 'd, 'e, 'f>) : Render =
+    match choice with
+    | Choice1Of6 a -> renderA a
+    | Choice2Of6 b -> renderB b
+    | Choice3Of6 c -> renderC c
+    | Choice4Of6 d -> renderD d
+    | Choice5Of6 e -> renderE e
+    | Choice6Of6 f -> renderF f
+
+let inline choiceOf7 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (renderF: 'f -> Render) (renderG: 'g -> Render) (choice: Choice<'a, 'b, 'c, 'd, 'e, 'f, 'g>) : Render =
+    match choice with
+    | Choice1Of7 a -> renderA a
+    | Choice2Of7 b -> renderB b
+    | Choice3Of7 c -> renderC c
+    | Choice4Of7 d -> renderD d
+    | Choice5Of7 e -> renderE e
+    | Choice6Of7 f -> renderF f
+    | Choice7Of7 g -> renderG g
