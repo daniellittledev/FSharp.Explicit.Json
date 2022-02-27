@@ -1,4 +1,4 @@
-module FSharp.Explicit.Json.Parse
+﻿module FSharp.Explicit.Json.Parse
 
 open System
 open System.Text.Json
@@ -196,9 +196,9 @@ let tuple3 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (parserC: Parser<
     }) context
 
 let list (itemParser: Parser<'a, 'e>) (context: ParserContext) : Validation<'a list, JsonParserError<'e>> =
-    getValue Array (fun e -> 
+    getValue Array (fun e ->
         e.EnumerateArray()
-        |> Seq.map (fun e -> 
+        |> Seq.map (fun e ->
             itemParser (ParserContext e)
         )
         |> Seq.fold (fun validation item ->
