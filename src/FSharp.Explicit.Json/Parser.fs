@@ -1,4 +1,4 @@
-﻿module FSharp.Explicit.Json.Parse
+module FSharp.Explicit.Json.Parse
 
 open System
 open System.Text.Json
@@ -104,18 +104,18 @@ let int16 (context: ParserContext) =
         | false, _ -> ValueOutOfRange (typeof<int16>, e.GetRawText()) |> error context
     ) context
 
-let int64 (context: ParserContext) =
-    getValue Number (fun e ->
-        match e.TryGetInt64() with
-        | true, x -> Ok x
-        | false, _ -> ValueOutOfRange (typeof<int64>, e.GetRawText()) |> error context
-    ) context
-
 let int (context: ParserContext) =
     getValue Number (fun e ->
         match e.TryGetInt32() with
         | true, x -> Ok x
         | false, _ -> ValueOutOfRange (typeof<int32>, e.GetRawText()) |> error context
+    ) context
+
+let long (context: ParserContext) =
+    getValue Number (fun e ->
+        match e.TryGetInt64() with
+        | true, x -> Ok x
+        | false, _ -> ValueOutOfRange (typeof<int64>, e.GetRawText()) |> error context
     ) context
 
 let single (context: ParserContext) =

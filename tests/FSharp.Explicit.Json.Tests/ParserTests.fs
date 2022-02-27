@@ -1,7 +1,8 @@
-﻿module FSharp.Explicit.Json.ParserTests
+module FSharp.Explicit.Json.ParserTests
 
 open Expecto
 open Expecto.Flip.Expect
+open System
 open System.Text.Json
 open FsToolkit.ErrorHandling
 open FSharp.Explicit.Json.Parse
@@ -114,20 +115,87 @@ let tests =
                 let actual = parse "256" Parse.int
                 equal "256 -> Ok 256" expected actual
 
+            testCase "Parse out of range byte" <| fun _ ->
+                let json = $"{Byte.MaxValue.ToString()}0"
+                let expected = ValueOutOfRange (typeof<byte>, json) |> leftError []
+                let actual = parse json Parse.byte
+                equal (sprintf "%A -> %A" json expected) expected actual
+
+            testCase "Parse int16" <| fun _ ->
+                let number = Int16.MaxValue
+                let expected = Ok number
+                let json = number.ToString()
+                let actual = parse json Parse.int16
+                equal $"{json} -> Ok {json}" expected actual
+
+            testCase "Parse out of range int16" <| fun _ ->
+                let json = $"{Int16.MaxValue.ToString()}0"
+                let expected = ValueOutOfRange (typeof<int16>, json) |> leftError []
+                let actual = parse json Parse.int16
+                equal (sprintf "%A -> %A" json expected) expected actual
+
             testCase "Parse int" <| fun _ ->
-                let expected = Ok 2147483647
-                let actual = parse "2147483647" Parse.int
-                equal "2147483647 -> Ok 2147483647" expected actual
+                let number = Int32.MaxValue
+                let expected = Ok number
+                let json = number.ToString()
+                let actual = parse json Parse.int
+                equal $"{json} -> Ok {json}" expected actual
 
             testCase "Parse out of range int" <| fun _ ->
-                let json = "2147483648"
+                let json = $"{Int32.MaxValue.ToString()}0"
                 let expected = ValueOutOfRange (typeof<int32>, json) |> leftError []
                 let actual = parse json Parse.int
                 equal (sprintf "%A -> %A" json expected) expected actual
 
-            testCase "Parse decimal" <| fun _ ->
-                let expected = Ok 0.1111111111111111111111111111m
-                let json = "0.1111111111111111111111111111"
+            testCase "Parse long" <| fun _ ->
+                let number = Int64.MaxValue
+                let expected = Ok number
+                let json = number.ToString()
+                let actual = parse json Parse.long
+                equal $"{json} -> Ok {json}" expected actual
+
+            testCase "Parse out of range long" <| fun _ ->
+                let json = $"{Int64.MaxValue.ToString()}0"
+                let expected = ValueOutOfRange (typeof<int64>, json) |> leftError []
+                let actual = parse json Parse.long
+                equal (sprintf "%A -> %A" json expected) expected actual
+
+            testCase "Parse single" <| fun _ ->
+                let number = Single.MaxValue
+                let expected = Ok number
+                let json = number.ToString()
+                let actual = parse json Parse.single
+                equal $"{json} -> Ok {json}" expected actual
+
+            testCase "Parse out of range single" <| fun _ ->
+                let json = $"{Single.MaxValue.ToString()}0"
+                let expected = Ok Single.PositiveInfinity
+                let actual = parse json Parse.single
+                equal (sprintf "%A -> %A" json expected) expected actual
+
+            testCase "Parse double" <| fun _ ->
+                let number = Double.MaxValue
+                let expected = Ok number
+                let json = number.ToString()
+                let actual = parse json Parse.double
+                equal $"{json} -> Ok {json}" expected actual
+
+            testCase "Parse out of range double" <| fun _ ->
+                let json = $"{Double.MaxValue.ToString()}0"
+                let expected = Ok Double.PositiveInfinity
+                let actual = parse json Parse.double
+                equal (sprintf "%A -> %A" json expected) expected actual
+
+            testCase "Parse deciaml" <| fun _ ->
+                let number = System.Decimal.MaxValue
+                let expected = Ok number
+                let json = number.ToString()
+                let actual = parse json Parse.decimal
+                equal $"{json} -> Ok {json}" expected actual
+
+            testCase "Parse out of range decimal" <| fun _ ->
+                let json = $"{Decimal.MaxValue.ToString()}0"
+                let expected = ValueOutOfRange (typeof<decimal>, json) |> leftError []
                 let actual = parse json Parse.decimal
                 equal (sprintf "%A -> %A" json expected) expected actual
 
