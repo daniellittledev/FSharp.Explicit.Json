@@ -167,6 +167,17 @@ let timeSpan (context: ParserContext) =
         | false, _ -> ValueOutOfRange (typeof<TimeSpan>, value) |> error context
     ) context
 
+let enumName (enumType: Type) (context: ParserContext) =
+    getValue String (fun e ->
+        let value = e.GetString()
+        match Enum.TryParse(enumType, value) with
+        | true, x -> Ok x
+        | false, _ -> ValueOutOfRange (enumType, value) |> error context
+    ) context
+
+let enumNameOf<'t when 't :> Enum> (context: ParserContext) =
+    enumName typeof<'t> context |> Result.map (fun x -> x :?> 't)
+
 let tuple2 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (context: ParserContext) : Validation<'a * 'b, JsonParserError<'e>> =
     getValue Array (fun e -> validation {
         do! validateTupleLength 2 (e.GetArrayLength()) context

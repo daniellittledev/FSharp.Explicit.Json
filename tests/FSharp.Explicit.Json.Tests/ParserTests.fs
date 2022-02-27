@@ -1,4 +1,4 @@
-module FSharp.Explicit.Json.ParserTests
+﻿module FSharp.Explicit.Json.ParserTests
 
 open Expecto
 open Expecto.Flip.Expect
@@ -223,7 +223,12 @@ let tests =
                 let actual = parse json Parse.timeSpan
                 equal $"{json} -> Ok {json}" expected actual
 
-            // Parse Enum
+            testCase "Parse Enum Name" <| fun _ ->
+                let value = DateTimeKind.Utc
+                let expected = Ok DateTimeKind.Utc
+                let json = value.ToString() |> jsonString
+                let actual = parse json Parse.enumNameOf<DateTimeKind>
+                equal $"{json} -> Ok {json}" expected actual
 
             testCase "Parse list" <| fun _ ->
                 let expected = Ok [ 1; 2; 3 ]
