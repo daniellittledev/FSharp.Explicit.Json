@@ -1,4 +1,4 @@
-﻿module FSharp.Explicit.Json.Parse
+module FSharp.Explicit.Json.Parse
 
 open System
 open System.Text.Json
@@ -194,6 +194,15 @@ let tuple3 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (parserC: Parser<
         and! item2 = parserC (ParserContext (e.Item 2))
         return (item0, item1, item2)
     }) context
+
+let option (itemParser: Parser<'a, 'e>) (context: ParserContext) : Validation<'a option, JsonParserError<'e>> = validation {
+    let actualType = context.NodeType
+    if actualType = NodeType.Undefined || actualType = NodeType.Null then
+        return None
+    else
+        let! value = itemParser context
+        return Some value
+}
 
 let list (itemParser: Parser<'a, 'e>) (context: ParserContext) : Validation<'a list, JsonParserError<'e>> =
     getValue Array (fun e ->

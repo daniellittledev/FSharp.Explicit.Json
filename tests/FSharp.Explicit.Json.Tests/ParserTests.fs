@@ -1,4 +1,4 @@
-﻿module FSharp.Explicit.Json.ParserTests
+module FSharp.Explicit.Json.ParserTests
 
 open Expecto
 open Expecto.Flip.Expect
@@ -19,7 +19,7 @@ module rec TestTypes =
     | Subtract of Operation
 
     type Value =
-    | None
+    | NoValue
     | Reference of Name
     | Scalar of Scalar
     | Vector of Vector
@@ -59,7 +59,7 @@ let tests =
             let rec parseValue (node: ParserContext) = validation {
                 match node.NodeType with
                 | Null ->
-                    return None
+                    return NoValue
                 | String ->
                     let! name = Parse.string node
                     return Reference name
@@ -236,7 +236,31 @@ let tests =
                 equal "[1, 2, 3] -> Ok [1; 2; 3]" expected actual
         ]
 
-        // Parse Option
+        testList "Parse Option" [
+            testCase "Parse Some x" <| fun _ ->
+                let expected = Ok (Some 1)
+
+                let json = "1"
+                let actual = parse json (Parse.option Parse.int)
+
+                equal $"{json} -> Some 1" expected actual
+
+            testCase "Parse None" <| fun _ ->
+                let expected: Result<int option, _> = Ok None
+
+                let json = "null"
+                let actual = parse json (Parse.option Parse.int)
+
+                equal $"{json} -> None" expected actual
+
+            testCase "Parse Some Wrong Type" <| fun _ ->
+                let expected = UnexpectedType (Expected NodeType.Number, Actual NodeType.Bool) |> leftError []
+
+                let json = "false"
+                let actual = parse json (Parse.option Parse.int)
+
+                equal $"{json} -> Type Error for int" expected actual
+        ]
 
         testList "Parse Tuples" [
             testCase "Parse Tuple2" <| fun _ ->
