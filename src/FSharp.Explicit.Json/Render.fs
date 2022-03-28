@@ -146,6 +146,12 @@ let inline tuple4 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -
 let inline tuple5 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (a: 'a, b: 'b, c: 'c, d: 'd, e: 'e) : Render =
     array { renderA a; renderB b; renderC c; renderD d; renderE e}
 
+let inline tuple6 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (renderF: 'f -> Render) (a: 'a, b: 'b, c: 'c, d: 'd, e: 'e, f: 'f) : Render =
+    array { renderA a; renderB b; renderC c; renderD d; renderE e; renderF f}
+
+let inline tuple7 (renderA: 'a -> Render) (renderB: 'b -> Render) (renderC: 'c -> Render) (renderD: 'd -> Render) (renderE: 'e -> Render) (renderF: 'f -> Render) (renderG: 'g -> Render) (a: 'a, b: 'b, c: 'c, d: 'd, e: 'e, f: 'f, g: 'g) : Render =
+    array { renderA a; renderB b; renderC c; renderD d; renderE e; renderF f; renderG g}
+
 let inline choiceOf2 (renderA: 'a -> Render) (renderB: 'b -> Render) (choice: Choice<'a, 'b>) : Render =
     match choice with
     | Choice1Of2 a -> renderA a

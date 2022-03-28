@@ -179,6 +179,20 @@ let tests =
                 let jsonText = jsonWriter.GetJsonString(jsonRender)
                 let expected = "[1,2,3,4,5]"
                 equal "Renders Tuple 5" expected jsonText
+
+            testCase "Render Tuple 6" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = (1, 2, 3, 4, 5, 6) |> Render.tuple6 Render.int Render.int Render.int Render.int Render.int Render.int
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "[1,2,3,4,5,6]"
+                equal "Renders Tuple 6" expected jsonText
+
+            testCase "Render Tuple 7" <| fun _ ->
+                use jsonWriter = new JsonWriter()
+                let jsonRender = (1, 2, 3, 4, 5, 6, 7) |> Render.tuple7 Render.int Render.int Render.int Render.int Render.int Render.int Render.int
+                let jsonText = jsonWriter.GetJsonString(jsonRender)
+                let expected = "[1,2,3,4,5,6,7]"
+                equal "Renders Tuple 7" expected jsonText
         ]
 
         // Render Discriminated Union
