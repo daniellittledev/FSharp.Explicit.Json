@@ -302,7 +302,7 @@ let tests =
                     let! typeName = node.prop "type" Parse.string
                     and! prop1 = node.prop "prop1" Parse.string
                     and! prop2 = node.prop "prop2" Parse.string
-                    ()
+                    return (typeName, prop1, prop2)
                 })
         
                 let expected =
