@@ -195,6 +195,31 @@ let tuple3 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (parserC: Parser<
         return (item0, item1, item2)
     }) context
 
+let inline private bindError (binder: 'e -> Result<'a, 'e2>) (source: Result<'a, 'e>) = match source with Ok v -> Ok v | Error e -> binder e
+
+let inline private liftUnexpectedTypeError (result: Validation<_, JsonParserError<'e>>) : Result<Validation<_, JsonParserError<'e>>, JsonParserError<'e>> =
+    match result with
+    | Ok x -> Ok <| Ok x
+    | Error [ { path = x; reason = UnexpectedType (a, b) } ] ->
+        Error { path = x; reason = UnexpectedType (a, b) }
+    | Error e -> Ok <| Error e
+
+let inline private lowerUnexpectedTypeError (result: Result<Validation<'a, JsonParserError<'e>>, JsonParserError<'e>>) : Validation<'a, JsonParserError<'e>> =
+    match result with
+    | Ok x -> x
+    | Error e -> Error [e]
+
+let choiceOf2 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (context: ParserContext) : Validation<Choice<'a, 'b>, JsonParserError<'e>> =
+    parserA context |> Result.map Choice1Of2 |> liftUnexpectedTypeError
+    |> bindError (fun _ -> parserB context |> Result.map Choice2Of2 |> liftUnexpectedTypeError)
+    |> lowerUnexpectedTypeError
+
+let choiceOf3 (parserA: Parser<'a, 'e>) (parserB: Parser<'b, 'e>) (parserC: Parser<'c, 'e>) (context: ParserContext) : Validation<Choice<'a, 'b, 'c>, JsonParserError<'e>> =
+    parserA context |> Result.map Choice1Of3 |> liftUnexpectedTypeError
+    |> bindError (fun _ -> parserB context |> Result.map Choice2Of3 |> liftUnexpectedTypeError)
+    |> bindError (fun _ -> parserC context |> Result.map Choice3Of3 |> liftUnexpectedTypeError)
+    |> lowerUnexpectedTypeError
+
 let option (itemParser: Parser<'a, 'e>) (context: ParserContext) : Validation<'a option, JsonParserError<'e>> = validation {
     let actualType = context.NodeType
     if actualType = NodeType.Undefined || actualType = NodeType.Null then

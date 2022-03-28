@@ -292,6 +292,41 @@ let tests =
                 equal $"""{json} -> (1, "a", false)""" expected actual
         ]
 
+        testList "Parse Choice" [
+
+            testCase "Parse Choice1Of2" <| fun _ ->
+                let expected = Ok <| Choice1Of2 1
+                
+                let json = "1"
+                let actual = parse json (Parse.choiceOf2 Parse.int Parse.bool)
+                
+                equal $"{json} -> 1" expected actual
+
+            testCase "Parse Choice2Of2" <| fun _ ->
+                let expected = Ok <| Choice2Of2 true
+
+                let json = "true"
+                let actual = parse json (Parse.choiceOf2 Parse.int Parse.bool)
+
+                equal $"{json} -> true" expected actual
+
+
+            testCase "Parse Choice3Of3" <| fun _ ->
+                let expected = Ok <| Choice3Of3 "y"
+
+                let json = "\"y\""
+                let actual = parse json (Parse.choiceOf3 Parse.int Parse.bool Parse.string)
+
+                equal $"{json} -> \"y\"" expected actual
+
+            // Up to 7of7
+
+            // Error handling
+            // Ambiguous types
+            // Not matching types
+
+        ]
+
         testList "Parse Error Handling" [
             testCase "Missing Properties" <| fun _ ->
         
